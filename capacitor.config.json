@@ -1,0 +1,8 @@
+{
+  "appId": "com.ilia.ai",
+  "appName": "ILIA AI",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  }
+}

@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="theme-color" content="#0f1115">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>ایلیا AI</title>
+<style>
+:root{
+  --bg:#0f1115;--side:#14171d;--surface:#1b1f27;--surface2:#232834;--border:#2a303c;
+  --text:#e8eaee;--muted:#8b93a1;--accent:#7c5cff;--accent2:#22d3ee;
+  --user:#26214a;--danger:#ef4444;--code:#0b0d11;--shadow:0 10px 40px rgba(0,0,0,.45);
+}
+[data-theme=light]{
+  --bg:#ffffff;--side:#f6f7f9;--surface:#f1f3f6;--surface2:#e8ebf0;--border:#dde1e8;
+  --text:#14171d;--muted:#667085;--user:#e9e5ff;--code:#f4f5f8;--shadow:0 10px 40px rgba(20,23,29,.15);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font-family:Vazirmatn,"Segoe UI",Tahoma,system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.75;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea,select{font:inherit;color:inherit}
+svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.app{display:flex;height:100dvh}
+
+/* sidebar */
+.side{width:290px;background:var(--side);border-inline-end:1px solid var(--border);display:flex;flex-direction:column;flex:none;transition:transform .25s ease;z-index:30}
+.side-top{padding:14px 14px 8px;display:flex;flex-direction:column;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px}
+.logo{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:900;font-size:15px;flex:none}
+.btn-new{display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#5b8cff);color:#fff;font-weight:700;justify-content:center}
+.search{width:100%;padding:9px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--border);outline:none}
+.search:focus{border-color:var(--accent)}
+.list{flex:1;overflow-y:auto;padding:6px 10px}
+.item{display:flex;align-items:center;gap:6px;padding:9px 12px;border-radius:10px;cursor:pointer;color:var(--muted);font-size:14.5px}
+.item span{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.item:hover{background:var(--surface)}
+.item.on{background:var(--surface2);color:var(--text)}
+.item .del{opacity:0;padding:2px;border-radius:6px}
+.item:hover .del,.item.on .del{opacity:.8}
+.item .del:hover{color:var(--danger)}
+.empty-list{color:var(--muted);text-align:center;padding:24px 8px;font-size:14px}
+.side-bot{padding:10px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--border)}
+.side-bot button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:10px;color:var(--muted)}
+.side-bot button:hover{background:var(--surface);color:var(--text)}
+.scrim{display:none}
+
+/* main */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+.top{display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top));border-bottom:1px solid var(--border);background:var(--bg)}
+.icon-btn{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:var(--muted)}
+.icon-btn:hover{background:var(--surface);color:var(--text)}
+.title{flex:1;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.menu-btn{display:none}
+.msgs{flex:1;overflow-y:auto;scroll-behavior:smooth;padding:18px 14px 8px}
+.wrap{max-width:780px;margin:0 auto}
+.hero{text-align:center;padding:9vh 10px 0}
+.hero .logo{width:68px;height:68px;border-radius:22px;font-size:28px;margin:0 auto 16px;box-shadow:0 12px 40px rgba(124,92,255,.35)}
+.hero h1{margin:0 0 6px;font-size:26px}
+.hero p{margin:0;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:26px}
+.chip{padding:10px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);font-size:14.5px}
+.chip:hover{border-color:var(--accent)}
+.setup{margin:22px auto 0;max-width:460px;padding:14px 16px;border-radius:14px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.4);font-size:14.5px;text-align:start}
+.setup button{margin-top:8px;padding:8px 14px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700}
+
+.msg{display:flex;gap:10px;margin:14px 0;align-items:flex-start}
+.msg.user{flex-direction:row}
+.msg .av{width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center;font-weight:800;font-size:13px;color:#fff}
+.msg.assistant .av{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.msg.user .av{display:none}
+.col{min-width:0;max-width:calc(100% - 44px)}
+.msg.user .col{max-width:88%;margin-inline-start:auto}
+.bubble{padding:2px 0;word-wrap:break-word;overflow-wrap:anywhere}
+.msg.user .bubble{background:var(--user);padding:10px 15px;border-radius:18px;border-start-end-radius:6px;white-space:pre-wrap}
+.bubble p{margin:0 0 .7em}.bubble p:last-child{margin-bottom:0}
+.bubble ul,.bubble ol{margin:.4em 0 .8em;padding-inline-start:1.5em}
+.bubble h3,.bubble h4,.bubble h5,.bubble h6{margin:.9em 0 .4em}
+.bubble code{background:var(--surface2);padding:1px 6px;border-radius:6px;font-family:ui-monospace,Consolas,monospace;font-size:.88em;direction:ltr;unicode-bidi:embed}
+.bubble a{color:var(--accent2)}
+.code{margin:.7em 0;border-radius:12px;overflow:hidden;background:var(--code);border:1px solid var(--border);direction:ltr}
+.code-h{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:var(--surface);color:var(--muted);font-size:12.5px}
+.code-h button{color:var(--muted);padding:2px 8px;border-radius:6px}.code-h button:hover{color:var(--text);background:var(--surface2)}
+.code pre{margin:0;padding:12px 14px;overflow-x:auto;font-size:13.5px;line-height:1.6;text-align:left}
+.code pre code{background:none;padding:0;font-size:inherit}
+.pic{max-width:100%;border-radius:14px;display:block;margin-bottom:8px;cursor:zoom-in}
+.gen{position:relative;width:min(100%,420px);aspect-ratio:1;border-radius:16px;background:var(--surface);border:1px solid var(--border);overflow:hidden;display:grid;place-items:center}
+.gen img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .4s}
+.gen.ok img{opacity:1}
+.gen .st{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);padding:16px;font-size:14px}
+.gen.ok .st{display:none}
+.spin{width:30px;height:30px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);animation:sp 1s linear infinite;margin:0 auto 10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.acts{display:flex;gap:2px;margin-top:4px;color:var(--muted)}
+.acts button{padding:5px 8px;border-radius:8px;font-size:12.5px;display:flex;gap:5px;align-items:center}
+.acts button:hover{background:var(--surface);color:var(--text)}
+.acts svg{width:16px;height:16px}
+.typing{display:inline-flex;gap:4px;padding:10px 0}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:bl 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.err{color:#fca5a5;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.35);padding:10px 14px;border-radius:12px;font-size:14.5px}
+
+/* composer */
+.comp{padding:8px 12px calc(12px + env(safe-area-inset-bottom));background:var(--bg)}
+.box{max-width:780px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:8px 8px 8px 10px;transition:border-color .2s}
+.box:focus-within{border-color:var(--accent)}
+.prev{display:none;padding:4px 4px 8px;position:relative;width:fit-content}
+.prev.on{display:block}
+.prev img{height:72px;border-radius:12px;display:block}
+.prev button{position:absolute;top:-2px;inset-inline-end:-6px;width:22px;height:22px;border-radius:50%;background:var(--danger);color:#fff;display:grid;place-items:center;font-size:13px;line-height:1}
+.row{display:flex;align-items:flex-end;gap:4px}
+textarea{flex:1;resize:none;background:none;border:0;outline:none;padding:9px 6px;max-height:180px;min-height:42px;line-height:1.6}
+.tool{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--muted);flex:none}
+.tool:hover{background:var(--surface2);color:var(--text)}
+.tool.on{background:rgba(124,92,255,.2);color:var(--accent)}
+.send{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#5b8cff);color:#fff;display:grid;place-items:center;flex:none}
+.send:disabled{opacity:.4;cursor:default}
+.send.stop{background:var(--danger)}
+.note{text-align:center;color:var(--muted);font-size:11.5px;margin-top:7px}
+.mode{display:none;font-size:12.5px;color:var(--accent);padding:0 6px 4px}
+.mode.on{display:block}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50;padding:14px}
+.modal.on{display:flex}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:20px;width:min(520px,100%);max-height:92dvh;overflow-y:auto;box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);font-weight:800;position:sticky;top:0;background:var(--bg);z-index:2}
+.card-b{padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.fld label{display:block;font-weight:700;font-size:14px;margin-bottom:5px}
+.fld small{display:block;color:var(--muted);font-size:12.5px;margin-top:4px;line-height:1.6}
+.fld input,.fld textarea,.fld select{width:100%;padding:10px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--border);outline:none;min-height:0;max-height:none}
+.fld input:focus,.fld textarea:focus,.fld select:focus{border-color:var(--accent)}
+.fld input.ltr{direction:ltr;text-align:left}
+.pw{position:relative}.pw button{position:absolute;top:50%;transform:translateY(-50%);inset-inline-end:8px;color:var(--muted);font-size:12.5px;padding:4px 8px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:10px 16px;border-radius:10px;background:var(--surface2);font-weight:700;font-size:14.5px}
+.btn.pri{background:var(--accent);color:#fff}
+.btn.dan{background:rgba(239,68,68,.15);color:#fca5a5}
+.status{font-size:13.5px;color:var(--muted)}
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;z-index:60;align-items:center;justify-content:center;padding:12px}
+.lb.on{display:flex}.lb img{max-width:100%;max-height:100%;border-radius:10px}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--surface2);color:var(--text);padding:9px 16px;border-radius:12px;font-size:14px;z-index:70;opacity:0;pointer-events:none;transition:opacity .25s;border:1px solid var(--border)}
+.toast.on{opacity:1}
+
+@media (max-width:820px){
+  .side{position:fixed;inset-block:0;inset-inline-start:0;transform:translateX(105%);box-shadow:var(--shadow)}
+  html[dir=ltr] .side{transform:translateX(-105%)}
+  .side.on{transform:none!important}
+  .scrim.on{display:block;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:25}
+  .menu-btn{display:grid}
+  .hero{padding-top:6vh}.hero h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side">
+    <div class="side-top">
+      <div class="brand"><div class="logo">I</div><span>ایلیا AI</span></div>
+      <button class="btn-new" id="newChat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>گفت‌وگوی جدید</button>
+      <input class="search" id="search" placeholder="جستجو در گفت‌وگوها…" autocomplete="off">
+    </div>
+    <div class="list" id="list"></div>
+    <div class="side-bot">
+      <button id="openSettings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>تنظیمات</button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main class="main">
+    <div class="top">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="منو"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div class="title" id="title">گفت‌وگوی جدید</div>
+      <button class="icon-btn" id="newChat2" aria-label="گفت‌وگوی جدید"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+    </div>
+    <div class="msgs" id="msgs"><div class="wrap" id="wrap"></div></div>
+    <div class="comp">
+      <div class="box">
+        <div class="mode" id="mode">🎨 حالت ساخت تصویر فعال است — توضیح تصویر را بنویسید</div>
+        <div class="prev" id="prev"><img id="prevImg" alt=""><button id="prevX" aria-label="حذف">×</button></div>
+        <div class="row">
+          <button class="tool" id="attach" aria-label="افزودن عکس"><svg viewBox="0 0 24 24"><path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg></button>
+          <button class="tool" id="genBtn" aria-label="ساخت تصویر"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m21 15-5-5L5 21"/></svg></button>
+          <textarea id="input" rows="1" placeholder="هر چیزی بپرسید…"></textarea>
+          <button class="send" id="send" aria-label="ارسال"><svg viewBox="0 0 24 24" id="sendIcon"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+        </div>
+      </div>
+      <div class="note">ایلیا AI ممکن است اشتباه کند؛ اطلاعات مهم را بررسی کنید.</div>
+    </div>
+    <input type="file" id="file" accept="image/*" hidden>
+  </main>
+</div>
+
+<div class="modal" id="modal">
+  <div class="card">
+    <div class="card-h"><span>تنظیمات</span><button class="icon-btn" id="closeSettings" aria-label="بستن"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="card-b">
+      <div class="fld">
+        <label>کلید OpenRouter (API Key)</label>
+        <div class="pw"><input class="ltr" id="sKey" type="password" placeholder="sk-or-v1-…" autocomplete="off" spellcheck="false"><button id="togglePw" type="button">نمایش</button></div>
+        <small>از <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" style="color:var(--accent2)">openrouter.ai/keys</a> یک کلید رایگان بسازید. کلید فقط روی همین دستگاه ذخیره می‌شود.</small>
+      </div>
+      <div class="fld">
+        <label>مدل متنی</label>
+        <input class="ltr" id="sModel" list="freeModels" placeholder="خالی = انتخاب خودکار بهترین مدل رایگان" autocomplete="off" spellcheck="false">
+        <small>اگر خالی بماند، اپ خودش یک مدل رایگان را انتخاب می‌کند و در صورت خطا سراغ مدل بعدی می‌رود.</small>
+      </div>
+      <div class="fld">
+        <label>مدل تحلیل تصویر</label>
+        <input class="ltr" id="sVision" list="freeVision" placeholder="خالی = انتخاب خودکار" autocomplete="off" spellcheck="false">
+      </div>
+      <datalist id="freeModels"></datalist><datalist id="freeVision"></datalist>
+      <div class="btns"><button class="btn" id="refreshModels">به‌روزرسانی فهرست مدل‌های رایگان</button><button class="btn" id="testBtn">آزمایش اتصال</button></div>
+      <div class="status" id="status"></div>
+      <div class="fld">
+        <label>دستور سیستمی (شخصیت دستیار)</label>
+        <textarea id="sSys" rows="4"></textarea>
+      </div>
+      <div class="fld">
+        <label>سرویس ساخت تصویر</label>
+        <input class="ltr" id="sImg" placeholder="https://image.pollinations.ai/prompt/" autocomplete="off" spellcheck="false">
+        <small>رایگان و بدون کلید است، اما کیفیت و پایداری آن تضمین نمی‌شود و ممکن است در ایران بدون VPN باز نشود.</small>
+      </div>
+      <div class="fld">
+        <label>پوسته</label>
+        <select id="sTheme"><option value="dark">تیره</option><option value="light">روشن</option></select>
+      </div>
+      <div class="btns">
+        <button class="btn pri" id="saveSettings">ذخیره</button>
+        <button class="btn dan" id="clearAll">حذف همه گفت‌وگوها</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="lb" id="lb"><img id="lbImg" alt=""></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const API='https://openrouter.ai/api/v1';
+const DEF_SYS='تو «ایلیا AI» هستی؛ دستیار هوشمند و شخصی کاربر. به زبانی که کاربر می‌نویسد پاسخ بده؛ اگر فارسی نوشت، فارسی روان، دقیق و طبیعی جواب بده. پاسخ‌ها مفید، مرتب و کاربردی باشند. در برنامه‌نویسی از بلوک کد استفاده کن. اگر چیزی را نمی‌دانی صادقانه بگو.';
+const DEF_IMG='https://image.pollinations.ai/prompt/';
+
+/* ---------- storage ---------- */
+const store={
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+};
+let S=Object.assign({key:'',model:'',vision:'',sys:DEF_SYS,img:DEF_IMG,theme:'dark'},store.get('ilia.settings',{}));
+let chats=store.get('ilia.chats',[]);
+let curId=store.get('ilia.cur',null);
+let pendingImg=null,imgMode=false,busy=false,ctrl=null;
+
+function saveChats(){
+  if(store.set('ilia.chats',chats))return;
+  // quota: drop images from oldest chats until it fits
+  const sorted=[...chats].sort((a,b)=>a.updated-b.updated);
+  for(const c of sorted){
+    c.messages.forEach(m=>{if(m.image)m.image=null});
+    if(store.set('ilia.chats',chats))return;
+  }
+  toast('حافظه دستگاه پر است؛ گفت‌وگوهای قدیمی را حذف کنید');
+}
+function saveSettings(){store.set('ilia.settings',S)}
+const cur=()=>chats.find(c=>c.id===curId);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+/* ---------- helpers ---------- */
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)}
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function inline(s){
+  s=s.replace(/`([^`]+)`/g,'<code>$1</code>');
+  s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  return s;
+}
+function codeBlock(b){
+  return '<div class="code"><div class="code-h"><span>'+esc(b.l||'code')+'</span><button data-copy>کپی</button></div><pre><code>'+esc(b.c.replace(/\n$/,''))+'</code></pre></div>';
+}
+function md(src){
+  const blocks=[];
+  src=src.replace(/```([\w+-]*)\n?([\s\S]*?)(```|$)/g,(m,l,c)=>{blocks.push({l,c});return '\n\u0000B'+(blocks.length-1)+'\u0000\n'});
+  const out=[];let list=null;
+  const close=()=>{if(list){out.push('</'+list+'>');list=null}};
+  for(const raw of esc(src).split('\n')){
+    let m;
+    if((m=raw.match(/^\s*[-*•]\s+(.*)/))){if(list!=='ul'){close();out.push('<ul>');list='ul'}out.push('<li dir="auto">'+inline(m[1])+'</li>');continue}
+    if((m=raw.match(/^\s*[\d۰-۹]+[.)\-]\s+(.*)/))){if(list!=='ol'){close();out.push('<ol>');list='ol'}out.push('<li dir="auto">'+inline(m[1])+'</li>');continue}
+    close();
+    if((m=raw.match(/^(#{1,4})\s+(.*)/))){const n=m[1].length+2;out.push('<h'+n+' dir="auto">'+inline(m[2])+'</h'+n+'>');continue}
+    if(raw.trim()==='')continue;
+    if(raw.indexOf('\u0000B')===0){out.push(raw);continue}
+    out.push('<p dir="auto">'+inline(raw)+'</p>');
+  }
+  close();
+  return out.join('').replace(/\u0000B(\d+)\u0000/g,(m,i)=>codeBlock(blocks[+i]));
+}
+function fileToDataUrl(file,max=1024,q=.8){
+  return new Promise((res,rej)=>{
+    const img=new Image(),u=URL.createObjectURL(file);
+    img.onload=()=>{
+      const s=Math.min(1,max/Math.max(img.width,img.height));
+      const w=Math.round(img.width*s),h=Math.round(img.height*s);
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(u);
+      res(c.toDataURL('image/jpeg',q));
+    };
+    img.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('تصویر خوانده نشد'))};
+    img.src=u;
+  });
+}
+
+/* ---------- models ---------- */
+async function loadFreeModels(force){
+  const c=store.get('ilia.models2',null);
+  if(!force&&c&&Date.now()-c.t<6*3600e3&&c.text&&c.text.length)return c;
+  const r=await fetch(API+'/models');
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const j=await r.json();
+  const free=(j.data||[]).filter(m=>m.pricing&&+m.pricing.prompt===0&&+m.pricing.completion===0&&!/inkling|agent|router|auto/i.test(m.id));
+  const textOnly=m=>{const o=(m.architecture&&m.architecture.output_modalities)||['text'];return o.length===1&&o[0]==='text'};
+  const pref=/llama|gemini|gemma|qwen|deepseek|mistral|gpt-oss|glm|kimi/i;
+  const rank=m=>(pref.test(m.id)?1e7:0)+(m.context_length||0)+(/:free$/.test(m.id)?5e6:0)-(/(\b1b\b|\b3b\b|-1b-|-3b-)/i.test(m.id)?9e6:0);
+  const text=free.filter(textOnly).sort((a,b)=>rank(b)-rank(a)).map(m=>m.id);
+  const vision=free.filter(m=>textOnly(m)&&((m.architecture&&m.architecture.input_modalities)||[]).includes('image')).sort((a,b)=>rank(b)-rank(a)).map(m=>m.id);
+  const d={t:Date.now(),text,vision};
+  store.set('ilia.models2',d);return d;
+}
+async function candidates(hasImage){
+  const manual=hasImage?S.vision:S.model;
+  if(manual)return [manual];
+  let d;
+  try{d=await loadFreeModels(false)}catch(e){d=store.get('ilia.models2',null)}
+  const list=d?(hasImage?d.vision:d.text):[];
+  if(!list.length)throw fatal('فهرست مدل‌های رایگان دریافت نشد. اینترنت/VPN را بررسی کنید یا در تنظیمات نام مدل را دستی وارد کنید.');
+  return list.slice(0,6);
+}
+function fatal(msg){const e=new Error(msg);e.fatal=true;return e}
+
+/* ---------- API ---------- */
+function headers(){
+  return {'Content-Type':'application/json','Authorization':'Bearer '+S.key,'HTTP-Referer':location.origin||'https://ilia.ai','X-Title':'ILIA AI'};
+}
+async function httpError(r){
+  let m='';try{const j=await r.json();m=(j.error&&(j.error.message||j.error.code))||''}catch(e){}
+  const e=new Error(m||('HTTP '+r.status));e.status=r.status;
+  if(r.status===401)throw fatal('کلید API نامعتبر است. آن را در تنظیمات دوباره وارد کنید.');
+  if(r.status===402)throw fatal('اعتبار یا دسترسی این مدل کافی نیست. مدل رایگان دیگری انتخاب کنید.');
+  throw e;
+}
+async function streamChat(model,messages,onDelta,signal){
+  const r=await fetch(API+'/chat/completions',{method:'POST',headers:headers(),signal,body:JSON.stringify({model,messages,stream:true})});
+  if(!r.ok)await httpError(r);
+  const reader=r.body.getReader(),dec=new TextDecoder();
+  let buf='',full='';
+  for(;;){
+    const {done,value}=await reader.read();if(done)break;
+    buf+=dec.decode(value,{stream:true});
+    let i;
+    while((i=buf.indexOf('\n'))>=0){
+      const line=buf.slice(0,i).trim();buf=buf.slice(i+1);
+      if(!line.startsWith('data:'))continue;
+      const d=line.slice(5).trim();if(d==='[DONE]')continue;
+      let j;try{j=JSON.parse(d)}catch(e){continue}
+      if(j.error){throw new Error(j.error.message||'خطای مدل')}
+      const t=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content;
+      if(t){full+=t;onDelta(full)}
+    }
+  }
+  return full;
+}
+async function ask(messages,hasImage,onDelta,onReset,signal){
+  const list=await candidates(hasImage);
+  let last;
+  for(const model of list){
+    try{
+      onReset();
+      const t=await streamChat(model,messages,onDelta,signal);
+      if(t.trim())return t;
+      last=new Error('پاسخ خالی از مدل');
+    }catch(e){
+      if(e.name==='AbortError')throw e;
+      if(e.fatal)throw e;
+      last=e;
+    }
+  }
+  throw last||new Error('مدلی در دسترس نیست');
+}
+async function askOnce(messages){
+  const list=await candidates(false);
+  for(const model of list){
+    try{
+      const r=await fetch(API+'/chat/completions',{method:'POST',headers:headers(),body:JSON.stringify({model,messages})});
+      if(!r.ok){if(r.status===401)await httpError(r);continue}
+      const j=await r.json();const t=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
+      if(t&&t.trim())return t.trim();
+    }catch(e){if(e.fatal)throw e}
+  }
+  throw new Error('no answer');
+}
+function friendly(e){
+  if(e.fatal)return e.message;
+  if(e.status===429)return 'سقف درخواست رایگان پر شده است. چند دقیقه صبر کنید و دوباره تلاش کنید.';
+  if(e.status===404)return 'این مدل دیگر در دسترس نیست. در تنظیمات مدل را خالی بگذارید تا خودکار انتخاب شود.';
+  if(e instanceof TypeError||/Failed to fetch|NetworkError|Load failed/i.test(e.message))return 'اتصال به سرور برقرار نشد. اینترنت یا VPN را بررسی کنید.';
+  return 'خطا: '+e.message;
+}
+
+/* ---------- render ---------- */
+const AV='<div class="av">AI</div>';
+const ICO_COPY='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>';
+const ICO_RE='<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.3L3 16M3 21v-5h5"/></svg>';
+const ICO_DL='<svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>';
+
+function genUrl(m){return (S.img||DEF_IMG)+encodeURIComponent(m.prompt)+'?width=1024&height=1024&nologo=true&model=flux&seed='+m.seed}
+
+function msgEl(m,i,last){
+  const d=document.createElement('div');
+  d.className='msg '+m.role;d.dataset.i=i;
+  if(m.role==='user'){
+    d.innerHTML='<div class="col"><div class="bubble">'+(m.image?'<img class="pic" src="'+m.image+'" alt="">':'')+esc(m.content||'')+'</div></div>';
+  }else if(m.type==='image'){
+    d.innerHTML=AV+'<div class="col"><div class="bubble"><div class="gen"><div class="st"><div><div class="spin"></div>در حال ساخت تصویر…</div></div><img alt="'+esc(m.prompt)+'"></div></div><div class="acts"><button data-dl>'+ICO_DL+'ذخیره</button><button data-regen-img>'+ICO_RE+'ساخت دوباره</button></div></div>';
+    const g=d.querySelector('.gen'),im=g.querySelector('img');
+    im.onload=()=>g.classList.add('ok');
+    im.onerror=()=>{g.querySelector('.st').innerHTML='<div>ساخت تصویر ناموفق بود.<br>اینترنت/VPN را بررسی کنید یا «ساخت دوباره» را بزنید.</div>'};
+    im.src=genUrl(m);
+  }else{
+    d.innerHTML=AV+'<div class="col"><div class="bubble">'+(m.error?'<div class="err">'+esc(m.content)+'</div>':md(m.content||''))+'</div><div class="acts"><button data-copymsg>'+ICO_COPY+'کپی</button>'+(last?'<button data-regen>'+ICO_RE+'تلاش دوباره</button>':'')+'</div></div>';
+  }
+  return d;
+}
+function render(){
+  const c=cur(),w=$('#wrap');w.innerHTML='';
+  $('#title').textContent=c?c.title:'گفت‌وگوی جدید';
+  if(!c||!c.messages.length){
+    const h=document.createElement('div');h.className='hero';
+    h.innerHTML='<div class="logo">I</div><h1>سلام! من ایلیا AI هستم</h1><p>هر سؤالی دارید بپرسید، عکس بفرستید یا تصویر بسازید.</p>'
+      +'<div class="chips"><button class="chip" data-p="یک داستان کوتاه و جذاب بنویس">✍️ داستان کوتاه</button><button class="chip" data-p="تفاوت پایتون و جاوااسکریپت را ساده توضیح بده">💻 توضیح برنامه‌نویسی</button><button class="chip" data-p="این متن را به انگلیسی روان ترجمه کن: ">🌐 ترجمه</button><button class="chip" data-img="یک شهر آینده‌نگر در غروب، سبک سینمایی">🎨 ساخت تصویر</button></div>'
+      +(S.key?'':'<div class="setup">برای شروع، یک کلید رایگان OpenRouter لازم است.<br><button id="goSet">باز کردن تنظیمات</button></div>');
+    w.appendChild(h);
+  }else{
+    c.messages.forEach((m,i)=>w.appendChild(msgEl(m,i,i===c.messages.length-1&&m.role==='assistant'&&m.type!=='image')));
+  }
+  renderList();scrollEnd(true);
+}
+function renderList(){
+  const q=$('#search').value.trim().toLowerCase(),l=$('#list');l.innerHTML='';
+  const items=[...chats].sort((a,b)=>b.updated-a.updated).filter(c=>!q||c.title.toLowerCase().includes(q));
+  if(!items.length){l.innerHTML='<div class="empty-list">'+(q?'چیزی پیدا نشد':'هنوز گفت‌وگویی ندارید')+'</div>';return}
+  items.forEach(c=>{
+    const e=document.createElement('div');e.className='item'+(c.id===curId?' on':'');e.dataset.id=c.id;
+    e.innerHTML='<span>'+esc(c.title)+'</span><button class="del" data-del="'+c.id+'" aria-label="حذف"><svg viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>';
+    l.appendChild(e);
+  });
+}
+function scrollEnd(force){
+  const m=$('#msgs');
+  if(force||m.scrollHeight-m.scrollTop-m.clientHeight<160)m.scrollTop=m.scrollHeight;
+}
+
+/* ---------- chat flow ---------- */
+function newChat(){
+  if(busy)return;
+  curId=null;store.set('ilia.cur',null);clearPending();setImgMode(false);render();closeSide();$('#input').focus();
+}
+function ensureChat(){
+  let c=cur();
+  if(!c){c={id:uid(),title:'گفت‌وگوی جدید',messages:[],updated:Date.now()};chats.push(c);curId=c.id;store.set('ilia.cur',curId)}
+  return c;
+}
+function setBusy(b){
+  busy=b;const s=$('#send');
+  s.classList.toggle('stop',b);
+  $('#sendIcon').innerHTML=b?'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>':'<path d="M12 19V5M5 12l7-7 7 7"/>';
+}
+function buildApiMessages(c){
+  const msgs=[{role:'system',content:S.sys||DEF_SYS}];
+  const hist=c.messages.filter(m=>!m.error).slice(-16);
+  hist.forEach((m,idx)=>{
+    if(m.role==='user'){
+      const isLast=idx===hist.length-1;
+      if(m.image&&isLast)msgs.push({role:'user',content:[{type:'text',text:m.content||'این تصویر را توضیح بده.'},{type:'image_url',image_url:{url:m.image}}]});
+      else msgs.push({role:'user',content:(m.content||'')+(m.image?' [تصویری پیوست شده بود]':'')});
+    }else if(m.type==='image')msgs.push({role:'assistant',content:'[تصویری با این توضیح ساخته شد: '+m.prompt+']'});
+    else msgs.push({role:'assistant',content:m.content});
+  });
+  return msgs;
+}
+async function send(textOverride){
+  if(busy){if(ctrl)ctrl.abort();return}
+  const inp=$('#input');
+  let text=(textOverride!==undefined?textOverride:inp.value).trim();
+  if(!text&&!pendingImg)return;
+  if(!S.key){toast('ابتدا کلید OpenRouter را در تنظیمات وارد کنید');openSettings();return}
+  let wantImg=imgMode;
+  const m=text.match(/^\/(?:image|img|تصویر)\s+([\s\S]+)/i);
+  if(m){wantImg=true;text=m[1].trim()}
+  const c=ensureChat();
+  if(wantImg&&!pendingImg){
+    c.messages.push({role:'user',content:'🎨 '+text});
+    if(c.title==='گفت‌وگوی جدید')c.title=text.slice(0,40);
+    c.updated=Date.now();
+    inp.value='';autosize();setImgMode(false);
+    await makeImage(c,text);
+    return;
+  }
+  const um={role:'user',content:text,image:pendingImg||undefined};
+  c.messages.push(um);
+  if(c.title==='گفت‌وگوی جدید')c.title=(text||'تحلیل تصویر').slice(0,40);
+  c.updated=Date.now();
+  inp.value='';autosize();clearPending();saveChats();render();
+  await reply(c);
+}
+async function reply(c){
+  const hasImage=!!(c.messages[c.messages.length-1].image);
+  const am={role:'assistant',content:''};
+  c.messages.push(am);
+  render();
+  const el=$('#wrap').lastElementChild.querySelector('.bubble');
+  el.innerHTML='<div class="typing"><i></i><i></i><i></i></div>';
+  $('#wrap').lastElementChild.querySelector('.acts').style.display='none';
+  setBusy(true);ctrl=new AbortController();
+  try{
+    const api=buildApiMessages({messages:c.messages.slice(0,-1)});
+    const text=await ask(api,hasImage,t=>{am.content=t;el.innerHTML=md(t);scrollEnd()},()=>{am.content='';el.innerHTML='<div class="typing"><i></i><i></i><i></i></div>'},ctrl.signal);
+    am.content=text;
+  }catch(e){
+    if(e.name==='AbortError'){if(!am.content.trim()){c.messages.pop()}}
+    else{am.content=friendly(e);am.error=true}
+  }
+  setBusy(false);ctrl=null;c.updated=Date.now();saveChats();render();
+}
+async function makeImage(c,prompt){
+  let en=prompt;
+  if(/[^\x00-\x7F]/.test(prompt)){
+    try{
+      en=await askOnce([{role:'system',content:'Translate the user text into one vivid English image-generation prompt. Output ONLY the prompt, no quotes, no explanation.'},{role:'user',content:prompt}]);
+      en=en.replace(/^["'«»\s]+|["'«»\s]+$/g,'').slice(0,500);
+    }catch(e){if(e.fatal){toast(e.message)}en=prompt}
+  }
+  c.messages.push({role:'assistant',type:'image',prompt:en,seed:Math.floor(Math.random()*1e6)});
+  c.updated=Date.now();saveChats();render();
+}
+async function regenerate(){
+  const c=cur();if(!c||busy)return;
+  while(c.messages.length&&c.messages[c.messages.length-1].role==='assistant')c.messages.pop();
+  if(!c.messages.length)return;
+  saveChats();render();await reply(c);
+}
+
+/* ---------- UI wiring ---------- */
+function autosize(){const t=$('#input');t.style.height='auto';t.style.height=Math.min(t.scrollHeight,180)+'px'}
+function clearPending(){pendingImg=null;$('#prev').classList.remove('on');$('#file').value=''}
+function setImgMode(on){
+  imgMode=on;$('#genBtn').classList.toggle('on',on);$('#mode').classList.toggle('on',on);
+  $('#input').placeholder=on?'مثلاً: گربه‌ای فضانورد روی ماه…':'هر چیزی بپرسید…';
+}
+function openSide(){$('#side').classList.add('on');$('#scrim').classList.add('on')}
+function closeSide(){$('#side').classList.remove('on');$('#scrim').classList.remove('on')}
+function applyTheme(){
+  document.documentElement.dataset.theme=S.theme;
+  document.querySelector('meta[name=theme-color]').content=S.theme==='light'?'#ffffff':'#0f1115';
+}
+function fillDatalists(d){
+  $('#freeModels').innerHTML=(d.text||[]).map(x=>'<option value="'+esc(x)+'">').join('');
+  $('#freeVision').innerHTML=(d.vision||[]).map(x=>'<option value="'+esc(x)+'">').join('');
+}
+function openSettings(){
+  $('#sKey').value=S.key;$('#sModel').value=S.model;$('#sVision').value=S.vision;
+  $('#sSys').value=S.sys;$('#sImg').value=S.img;$('#sTheme').value=S.theme;$('#status').textContent='';
+  $('#modal').classList.add('on');closeSide();
+  const c=store.get('ilia.models2',null);if(c)fillDatalists(c);
+}
+function readSettings(){
+  S.key=$('#sKey').value.trim();S.model=$('#sModel').value.trim();S.vision=$('#sVision').value.trim();
+  S.sys=$('#sSys').value.trim()||DEF_SYS;S.img=$('#sImg').value.trim()||DEF_IMG;S.theme=$('#sTheme').value;
+  if(!/\/$|=$/.test(S.img))S.img+='/';
+}
+
+document.addEventListener('click',async ev=>{
+  const t=ev.target.closest('button,.item,.chip,img.pic,[data-copy]');
+  if(!t)return;
+  if(t.id==='goSet'){openSettings();return}
+  if(t.dataset.copy!==undefined){
+    const code=t.closest('.code').querySelector('code').innerText;
+    try{await navigator.clipboard.writeText(code);t.textContent='کپی شد ✓';setTimeout(()=>t.textContent='کپی',1500)}catch(e){toast('کپی نشد')}
+    return;
+  }
+  if(t.dataset.copymsg!==undefined){
+    const i=+t.closest('.msg').dataset.i,m=cur().messages[i];
+    try{await navigator.clipboard.writeText(m.content);toast('کپی شد')}catch(e){toast('کپی نشد')}
+    return;
+  }
+  if(t.dataset.regen!==undefined){regenerate();return}
+  if(t.dataset.regenImg!==undefined){
+    const c=cur(),i=+t.closest('.msg').dataset.i;c.messages[i].seed=Math.floor(Math.random()*1e6);saveChats();render();return;
+  }
+  if(t.dataset.dl!==undefined){
+    const c=cur(),m=c.messages[+t.closest('.msg').dataset.i],u=genUrl(m);
+    try{
+      const b=await (await fetch(u)).blob(),a=document.createElement('a');
+      a.href=URL.createObjectURL(b);a.download='ilia-ai-'+Date.now()+'.jpg';document.body.appendChild(a);a.click();a.remove();
+    }catch(e){window.open(u,'_blank')}
+    return;
+  }
+  if(t.classList&&t.classList.contains('pic')){$('#lbImg').src=t.src;$('#lb').classList.add('on');return}
+  if(t.dataset.del){
+    ev.stopPropagation();
+    if(!confirm('این گفت‌وگو حذف شود؟'))return;
+    chats=chats.filter(c=>c.id!==t.dataset.del);
+    if(curId===t.dataset.del){curId=null;store.set('ilia.cur',null)}
+    saveChats();render();return;
+  }
+  if(t.classList.contains('item')){
+    if(busy)return;curId=t.dataset.id;store.set('ilia.cur',curId);render();closeSide();return;
+  }
+  if(t.classList.contains('chip')){
+    if(t.dataset.img){setImgMode(true);$('#input').value=t.dataset.img}
+    else{setImgMode(false);$('#input').value=t.dataset.p||''}
+    autosize();$('#input').focus();return;
+  }
+});
+$('#lb').onclick=()=>$('#lb').classList.remove('on');
+$('#newChat').onclick=newChat;$('#newChat2').onclick=newChat;
+$('#menuBtn').onclick=openSide;$('#scrim').onclick=closeSide;
+$('#openSettings').onclick=openSettings;
+$('#closeSettings').onclick=()=>$('#modal').classList.remove('on');
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')$('#modal').classList.remove('on')});
+$('#search').oninput=renderList;
+$('#send').onclick=()=>send();
+$('#input').addEventListener('input',autosize);
+$('#input').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey&&!matchMedia('(pointer:coarse)').matches){e.preventDefault();send()}
+});
+$('#attach').onclick=()=>$('#file').click();
+$('#genBtn').onclick=()=>{setImgMode(!imgMode);if(imgMode)clearPending();$('#input').focus()};
+$('#file').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{pendingImg=await fileToDataUrl(f);$('#prevImg').src=pendingImg;$('#prev').classList.add('on');setImgMode(false)}
+  catch(err){toast('تصویر خوانده نشد')}
+};
+$('#prevX').onclick=clearPending;
+$('#togglePw').onclick=()=>{const i=$('#sKey');const s=i.type==='password';i.type=s?'text':'password';$('#togglePw').textContent=s?'پنهان':'نمایش'};
+$('#saveSettings').onclick=()=>{readSettings();saveSettings();applyTheme();$('#modal').classList.remove('on');toast('ذخیره شد');render()};
+$('#clearAll').onclick=()=>{
+  if(!confirm('همه گفت‌وگوها برای همیشه حذف شوند؟'))return;
+  chats=[];curId=null;store.set('ilia.cur',null);saveChats();$('#modal').classList.remove('on');render();
+};
+$('#refreshModels').onclick=async()=>{
+  const s=$('#status');s.textContent='در حال دریافت فهرست…';
+  try{const d=await loadFreeModels(true);fillDatalists(d);s.textContent='✓ '+d.text.length+' مدل متنی و '+d.vision.length+' مدل تصویری رایگان پیدا شد. برای انتخاب، داخل کادرهای بالا بزنید.'}
+  catch(e){s.textContent='دریافت نشد: '+friendly(e)}
+};
+$('#testBtn').onclick=async()=>{
+  readSettings();saveSettings();
+  const s=$('#status');
+  if(!S.key){s.textContent='ابتدا کلید را وارد کنید.';return}
+  s.textContent='در حال آزمایش…';
+  try{const t=await askOnce([{role:'user',content:'فقط بنویس: سلام'}]);s.textContent='✓ اتصال برقرار است. پاسخ: '+t.slice(0,60)}
+  catch(e){s.textContent='✗ '+friendly(e)}
+};
+
+/* ---------- init ---------- */
+applyTheme();
+if(!cur()){curId=null}
+render();autosize();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){
+  addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+loadFreeModels(false).catch(()=>{});
+})();
+</script>
+</body>
+</html>
